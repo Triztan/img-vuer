@@ -108,6 +108,44 @@ const gallery = {
         }
       },
     })
+    Vue.directive('galleryhandler', {
+      bind(el) {
+        if (!el.dataset.large) throw 'Missing data-large for the gallery handler'
+      },
+      // add update
+      inserted(el, binding) {
+        // 同时兼容arg和value传分组名称
+        // 加 String() 防止 0 捣乱
+        let group = binding.arg || binding.value
+        el.addEventListener('click', openVuer(el, group))
+        let imgSrc = getImgSrc(el)
+        if (group) {
+          let imgGroup = imgList[group]
+          // 有分组
+          if (imgGroup) {
+            // 分组已定义
+            imgGroup.push(imgSrc)
+          } else {
+            imgList[group] = [imgSrc]
+          }
+        } else {
+          // 无分组（单张）
+          // 无需储存，直接用imgSrc打开
+        }
+      },
+      unbind(el, binding) {
+        // 调查keep alive后跳转是否触发unbind
+        vm.isShow = false
+        let imgSrc = getImgSrc(el)
+        let group = binding.arg || binding.value
+        el.removeEventListener('click', openVuer(el, group))
+        if (group || group === 0) {
+          let imgGroup = imgList[group]
+          let index = imgGroup.indexOf(imgSrc)
+          imgGroup.splice(index, 1)
+        }
+      },
+    })
   },
 }
 export default gallery
